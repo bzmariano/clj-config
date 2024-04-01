@@ -1,0 +1,18 @@
+{:aliases {:dev {:extra-paths ["dev"]}
+           :test {:extra-deps {lambdaisland/kaocha {:mvn/version "RELEASE"}}}
+           :profile {:extra-deps {com.clojure-goes-fast/clj-async-profiler   {:mvn/version "RELEASE"}
+                                  com.clojure-goes-fast/clj-java-decompiler  {:mvn/version "RELEASE"}
+                                  com.clojure-goes-fast/clj-memory-meter     {:mvn/version "RELEASE"}
+                                  criterium/criterium                        {:mvn/version "RELEASE"}}
+                     :jvm-opts ["-Djdk.attach.allowAttachSelf"
+                                "-XX:+UseG1GC"
+                                "-XX:-OmitStackTraceInFastThrow"
+                                "-XX:+UnlockDiagnosticVMOptions" "-XX:+DebugNonSafepoints"]}}
+
+ :launchpad/main-opts []
+ :launchpad/java-args []
+ :launchpad/requires []
+ :launchpad/middleware ["cider-npepl" "nrepl-refactor"]
+ :launchpad/options {:portal true}
+ :launchpad/aliases [:dev :test :profile]
+ :launchpad/shadow-cljs []}
