@@ -1,0 +1,13 @@
+{:source-aliases #{:dev :test :env/dev :env/test :lib/reloaded}
+ :java {:jdk-source-uri       "file:///usr/lib/jvm/openjdk-21/lib/src.zip" ;;
+        :home-path            nil ;; jdk-source-uri takes precedence
+        :download-jdk-source? false}
+ :clean {:automatically-after-ns-refactor true
+         :ns-inner-blocks-indentation     :next-line
+         :ns-import-classes-indentation   :next-line
+         :sort {:ns      false
+                :require false
+                :import  false
+                :import-classes {:classes-per-line 3} ;; -1 for all in single line
+                :refer {:max-line-length 80}}}}
+ 
