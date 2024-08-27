@@ -1,5 +1,40 @@
 (in-ns 'user)
 
+;; DEBUGGING
+(def log-store (atom {}))
+
+(defn debug [tag val]
+  (swap! log-store update-in [tag] #(conj (or % []) val))
+  val)
+
+(defn logs
+  [tag & functions]
+  (let [tag (if (number? tag)
+              (nth (keys @log-store) tag)
+              tag)]
+    (loop [values    (@log-store tag)
+           functions functions]
+      (if (seq functions)
+        (recur ((first functions) values)
+               (rest functions))
+        values))))
+
+(defn same-values? [x]
+  (if (= 1 (count (set x)))
+    :same-values
+    :different-values))
+
+(defn tags []
+  (->> @log-store
+       (reduce-kv #(assoc %1 [(count %3) (same-values? %3) %2] (last %3)) {})
+       (map-indexed hash-map)
+       (into [])))
+
+(defn debug-data-reader [form]
+  `(debug (quote ~form) ~form))
+;;
+
+;; PROFILING
 (defn heap []
   (let [u (.getHeapMemoryUsage (java.lang.management.ManagementFactory/getMemoryMXBean))
         used (/ (.getUsed u) 1e6)
@@ -25,13 +60,13 @@
                       bytes-after (.getCurrentThreadAllocatedBytes bean)
                       t (/ (- now start) i')]
                   (println
-                   (format "Time per call: %s   Alloc per call: %,.0fb   Iterations: %d"
-                           (cond (< t 1e3) (format "%.0f ns" t)
-                                 (< t 1e6) (format "%.2f us" (/ t 1e3))
-                                 (< t 1e9) (format "%.2f ms" (/ t 1e6))
-                                 :else (format "%.2f s" (/ t 1e9)))
-                           (/ (- bytes-after bytes-before) i')
-                           i))
+                    (format "Time per call: %s   Alloc per call: %,.0fb   Iterations: %d"
+                            (cond (< t 1e3) (format "%.0f ns" t)
+                                  (< t 1e6) (format "%.2f us" (/ t 1e3))
+                                  (< t 1e9) (format "%.2f ms" (/ t 1e6))
+                                  :else (format "%.2f s" (/ t 1e9)))
+                            (/ (- bytes-after bytes-before) i')
+                            i))
                   first-res))))))]
 
   (defmacro time+
@@ -44,8 +79,6 @@
                             [2000 (cons ?duration-in-ms body)])]
       `(~time* ~duration (fn [] ~@body)))))
 
-(println "Loaded system-wide user.clj!")
-
 (defmacro perf-tools []
   '(do
      (require '[clj-async-profiler.core :as prof])
@@ -55,3 +88,6 @@
 
      (.refer *ns* 'time+ #'user/time+)
      (.refer *ns* 'heap #'user/heap)))
+;;
+
+(println "Loaded system-wide user.clj!")
